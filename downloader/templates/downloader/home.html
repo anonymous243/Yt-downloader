@@ -3,120 +3,693 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Downloader</title>
+    <title>InDown - Advanced Video Downloader</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        :root {
+            --primary: #3B82F6;
+            --secondary: #10B981;
+            --accent: #F59E0B;
+            --bg-primary: #0F172A;
+            --bg-secondary: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --border: #334155;
+            --error: #EF4444;
+            --success: #10B981;
+        }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
             min-height: 100vh;
-            color: #333;
+            overflow-x: hidden;
         }
-        .container {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 500px;
-            transition: all 0.3s ease;
-        }
-        .container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
-        h1 {
-            color: #4a4a4a;
-            margin-bottom: 30px;
-            font-weight: 600;
-            font-size: 2.5rem;
-        }
-        form {
-            margin-top: 20px;
-        }
-        input[type="text"] {
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 15px;
-            margin-bottom: 25px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            background: linear-gradient(45deg, #3B82F610 0%, #10B98110 50%, #F59E0B10 100%);
+            z-index: -1;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.3; }
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        .main-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .input-section {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
             transition: all 0.3s ease;
         }
-        input[type="text"]:focus {
-            border-color: #667eea;
-            box-shadow: 0 2px 15px rgba(102, 126, 234, 0.25);
+
+        .input-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
         }
-        button {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .url-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .platform-indicator {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.25rem 0.75rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .platform-indicator.show {
+            opacity: 1;
+        }
+
+        .quality-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .quality-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .quality-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .quality-select:focus {
+            border-color: var(--primary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.875rem 1.5rem;
             border: none;
             border-radius: 10px;
-            cursor: pointer;
-            font-size: 18px;
             font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #2563EB);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .video-preview {
+            display: none;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .preview-content {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .preview-thumbnail {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .preview-info {
+            flex: 1;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .preview-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .preview-platform {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--error);
+        }
+
+        .supported-platforms {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+        }
+
+        .platforms-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .platforms-grid {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .platform-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-radius: 8px;
             transition: all 0.3s ease;
         }
-        button:hover {
+
+        .platform-item:hover {
+            background: var(--bg-secondary);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        .message {
-            margin-top: 20px;
-            color: #28a745;
-            font-size: 18px;
+
+        .platform-icon {
+            font-size: 2rem;
+            color: var(--primary);
         }
-        .progress-bar {
-            width: 100%;
-            background-color: #f3f3f3;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 20px;
-            display: none;
+
+        .platform-name {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
-        .progress-bar-inner {
-            height: 20px;
-            width: 0;
-            background-color: #ff7e5f;
-            text-align: center;
-            line-height: 20px;
-            color: #fff;
-            transition: width 2s ease;
+
+        @media (max-width: 768px) {
+            .preview-content {
+                flex-direction: column;
+            }
+            
+            .preview-thumbnail {
+                width: 100%;
+                height: 200px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .notification {
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+            
+            .platforms-grid {
+                gap: 1rem;
+            }
         }
     </style>
-    <script>
-        function showProgress() {
-            var progressBar = document.getElementById('progress-bar');
-            var progressBarInner = document.getElementById('progress-bar-inner');
-            progressBar.style.display = 'block';
-            progressBarInner.style.width = '100%';
-            progressBarInner.innerHTML = 'Downloading...';
-        }
-    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>YouTube Video Downloader</h1>
-        <form method="post">
-            {% csrf_token %}
-            <input type="text" name="url" placeholder="Enter YouTube URL" required>
-            <button type="submit">Download</button>
-        </form>
-        <div id="progress-bar" class="progress-bar">
-            <div id="progress-bar-inner" class="progress-bar-inner"></div>
-        </div>
-        {% if message %}
-            <p class="message">{{ message }}</p>
-        {% endif %}
+    <div class="header">
+        <h1 class="logo">InDown Pro</h1>
+        <p class="tagline">Advanced multi-platform video downloader supporting YouTube, Instagram, TikTok and more</p>
     </div>
+
+    <div class="main-container">
+        <div class="input-section">
+            <div class="input-wrapper">
+                <input type="text" id="urlInput" class="url-input" placeholder="Paste video URL here (YouTube, Instagram, TikTok, Twitter, Facebook, Pinterest)">
+                <div id="platformIndicator" class="platform-indicator"></div>
+            </div>
+            
+            <div class="quality-selector">
+                <label class="quality-label">Quality</label>
+                <select id="qualitySelect" class="quality-select">
+                    <option value="best">Best Quality</option>
+                    <option value="720p">720p HD</option>
+                    <option value="480p">480p SD</option>
+                    <option value="360p">360p</option>
+                    <option value="worst">Lowest Quality (fastest)</option>
+                </select>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="previewBtn" class="btn btn-secondary">
+                    <i class="loading-spinner" id="previewSpinner"></i>
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button id="downloadBtn" class="btn btn-primary">
+                    <i class="loading-spinner" id="downloadSpinner"></i>
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+        </div>
+
+        <div id="videoPreview" class="video-preview">
+            <div class="preview-content">
+                <img id="previewThumbnail" class="preview-thumbnail" src="" alt="Video thumbnail">
+                <div class="preview-info">
+                    <div id="previewPlatform" class="preview-platform">
+                        <i class="fab fa-youtube"></i>
+                        <span>YouTube</span>
+                    </div>
+                    <h3 id="previewTitle" class="preview-title"></h3>
+                    <div class="preview-meta">
+                        <span id="previewDuration"></span>
+                        <span id="previewUploader"></span>
+                        <span id="previewViews"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="supported-platforms">
+        <h3 class="platforms-title">Supported Platforms</h3>
+        <div class="platforms-grid">
+            <div class="platform-item">
+                <i class="fab fa-youtube platform-icon"></i>
+                <span class="platform-name">YouTube</span>
+            </div>
+            <div class="platform-item">
+                <i class="fab fa-instagram platform-icon"></i>
+                <span class="platform-name">Instagram</span>
+            </div>
+            <div class="platform-item">
+                <i class="fab fa-tiktok platform-icon"></i>
+                <span class="platform-name">TikTok</span>
+            </div>
+            <div class="platform-item">
+                <i class="fab fa-twitter platform-icon"></i>
+                <span class="platform-name">Twitter</span>
+            </div>
+            <div class="platform-item">
+                <i class="fab fa-facebook platform-icon"></i>
+                <span class="platform-name">Facebook</span>
+            </div>
+            <div class="platform-item">
+                <i class="fab fa-pinterest platform-icon"></i>
+                <span class="platform-name">Pinterest</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        console.log("InDown Pro initialized");
+        
+        const urlInput = document.getElementById('urlInput');
+        const platformIndicator = document.getElementById('platformIndicator');
+        const previewBtn = document.getElementById('previewBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const videoPreview = document.getElementById('videoPreview');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const notification = document.getElementById('notification');
+
+        let currentVideoData = null;
+
+        // Platform detection patterns
+        const platformPatterns = {
+            youtube: {
+                patterns: [/youtube\.com/, /youtu\.be/, /youtube-nocookie\.com/],
+                icon: 'fab fa-youtube',
+                name: 'YouTube'
+            },
+            instagram: {
+                patterns: [/instagram\.com/, /instagr\.am/],
+                icon: 'fab fa-instagram',
+                name: 'Instagram'
+            },
+            tiktok: {
+                patterns: [/tiktok\.com/, /vm\.tiktok\.com/],
+                icon: 'fab fa-tiktok', 
+                name: 'TikTok'
+            },
+            twitter: {
+                patterns: [/twitter\.com/, /x\.com/, /t\.co/],
+                icon: 'fab fa-twitter',
+                name: 'Twitter'
+            },
+            facebook: {
+                patterns: [/facebook\.com/, /fb\.watch/, /fb\.me/],
+                icon: 'fab fa-facebook',
+                name: 'Facebook'
+            },
+            pinterest: {
+                patterns: [/pinterest\.com/, /pin\.it/],
+                icon: 'fab fa-pinterest',
+                name: 'Pinterest'
+            }
+        };
+
+        function detectPlatform(url) {
+            console.log('Detecting platform for:', url);
+            const lowerUrl = url.toLowerCase();
+            
+            for (const [platform, config] of Object.entries(platformPatterns)) {
+                for (const pattern of config.patterns) {
+                    if (pattern.test(lowerUrl)) {
+                        console.log('Platform detected:', platform);
+                        return { platform, ...config };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function showPlatformIndicator(platformData) {
+            console.log('Showing platform indicator:', platformData);
+            if (platformData) {
+                platformIndicator.innerHTML = `<i class="${platformData.icon}"></i> ${platformData.name}`;
+                platformIndicator.classList.add('show');
+            } else {
+                platformIndicator.classList.remove('show');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            console.log('Showing notification:', message, type);
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        function setLoading(button, spinner, isLoading) {
+            console.log('Setting loading state:', button.id, isLoading);
+            if (isLoading) {
+                button.disabled = true;
+                spinner.style.display = 'inline-block';
+            } else {
+                button.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        function showVideoPreview(data) {
+            console.log('Showing video preview:', data);
+            currentVideoData = data;
+            
+            document.getElementById('previewThumbnail').src = data.thumbnail || '';
+            document.getElementById('previewTitle').textContent = data.title || 'Unknown Title';
+            document.getElementById('previewDuration').textContent = data.duration || '';
+            document.getElementById('previewUploader').textContent = data.uploader || '';
+            document.getElementById('previewViews').textContent = data.view_count ? `${data.view_count.toLocaleString()} views` : '';
+            
+            const platformIcon = document.querySelector('#previewPlatform i');
+            const platformName = document.querySelector('#previewPlatform span');
+            const platformData = platformPatterns[data.platform];
+            
+            if (platformData) {
+                platformIcon.className = platformData.icon;
+                platformName.textContent = platformData.name;
+            }
+            
+            videoPreview.style.display = 'block';
+        }
+
+        // URL input event listener
+        urlInput.addEventListener('input', function() {
+            console.log('URL input changed:', this.value);
+            const url = this.value.trim();
+            const platformData = detectPlatform(url);
+            showPlatformIndicator(platformData);
+            
+            if (!url) {
+                videoPreview.style.display = 'none';
+                currentVideoData = null;
+            }
+        });
+
+        // Preview button
+        previewBtn.addEventListener('click', async function() {
+            console.log('Preview button clicked');
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showNotification('Please enter a video URL', 'error');
+                return;
+            }
+
+            setLoading(previewBtn, document.getElementById('previewSpinner'), true);
+
+            try {
+                const response = await fetch('/api/get-info/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+                console.log('Preview response:', data);
+
+                if (response.ok) {
+                    showVideoPreview(data);
+                    showNotification('Video information loaded successfully');
+                } else {
+                    showNotification(data.error || 'Failed to get video information', 'error');
+                }
+            } catch (error) {
+                console.error('Preview error:', error);
+                showNotification('Network error occurred', 'error');
+            } finally {
+                setLoading(previewBtn, document.getElementById('previewSpinner'), false);
+            }
+        });
+
+        // Download button
+        downloadBtn.addEventListener('click', async function() {
+            console.log('Download button clicked');
+            const url = urlInput.value.trim();
+            const quality = qualitySelect.value;
+            
+            if (!url) {
+                showNotification('Please enter a video URL', 'error');
+                return;
+            }
+
+            setLoading(downloadBtn, document.getElementById('downloadSpinner'), true);
+
+            try {
+                const response = await fetch('/api/download/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        url: url,
+                        quality: quality 
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Download response:', data);
+
+                if (response.ok) {
+                    showNotification(`Successfully downloaded: ${data.title}`, 'success');
+                } else {
+                    showNotification(data.error || 'Download failed', 'error');
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                showNotification('Network error occurred', 'error');
+            } finally {
+                setLoading(downloadBtn, document.getElementById('downloadSpinner'), false);
+            }
+        });
+
+        // Enter key support
+        urlInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                console.log('Enter key pressed, triggering preview');
+                previewBtn.click();
+            }
+        });
+
+        console.log('InDown Pro script loaded successfully');
+    </script>
 </body>
 </html>
